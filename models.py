@@ -45,7 +45,7 @@ class User(Model):
 
     @property
     def post_count(self) -> int:
-        return self.posts.count()
+        return Post.select(Post.id).where(Post.user == self).count()
 
     @property
     def subscriptions(self) -> list[str]:
@@ -67,7 +67,7 @@ class Post(Model):
     user = ForeignKeyField(User, backref="posts")
     title = CharField(100)
     text = TextField()
-    crated = DateTimeField(default=datetime.now)
+    created = DateTimeField(default=datetime.now)
 
     class Meta:
         db_table = "posts"
