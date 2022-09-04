@@ -142,15 +142,32 @@ async def user_by_username(username: str = Path(..., title="Username of target U
     name="List all user profiles with their 5 latest posts.",
     tags=["users"],
 )
-async def get_users_list() -> list[UserProfileWithPosts]:
+async def get_all_profiles() -> list[UserProfileWithPosts]:
     """
     List of all users + 5 most recent posts
     """
     result = []
     for u in User.select():
-        user = copy(u)
-        user.posts = [x for x in u.posts.order_by(Post.id.desc()).limit(5)]
-        profileWithPosts = UserProfileWithPosts.from_orm(user)
+        u.posts = list(u.posts.order_by(Post.id.desc()).limit(5))
+        profileWithPosts = UserProfileWithPosts.from_orm(u)
+        result.append(profileWithPosts)
+    return result
+
+
+@app.get(
+    "/users/top",
+    response_model=list[UserProfileWithPosts],
+    name="List top user profiles with their 5 latest posts.",
+    tags=["users"],
+)
+async def get_top20_profiles() -> list[UserProfileWithPosts]:
+    """
+    List top20 users with their recent posts.
+    """
+    result = []
+    for u in User.select().limit(5):
+        u.posts = list(u.posts.order_by(Post.id.desc()).limit(5))
+        profileWithPosts = UserProfileWithPosts.from_orm(u)
         result.append(profileWithPosts)
     return result
 
