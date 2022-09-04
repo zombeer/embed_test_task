@@ -5,12 +5,14 @@ from fastapi import Body
 from pydantic import BaseModel, validator
 
 
-class Post(BaseModel):
+class PostSchema(BaseModel):
     id: int
     title: str
     text: str
-    timestamp: datetime
-    is_new: bool = False
+    created: datetime
+
+    class Config:
+        orm_mode = True
 
 
 class GenericApiResponse(BaseModel):
@@ -34,6 +36,10 @@ class UserProfile(BaseModel):
         orm_mode = True
 
 
+class UserProfileWithPosts(UserProfile):
+    posts: list[PostSchema] = []
+
+
 class UpdateUserProfilePayload(BaseModel):
     """
     User can update the following parts of his/her profile: short biography, birth date, country, city, list of interests.
@@ -53,6 +59,15 @@ class UpdateUserProfilePayload(BaseModel):
                 "interests": ["sleep", "code"],
             }
         }
+
+    @validator("interests")
+    def validate_interests(cls, v):
+        """
+        This validator not only validats interests, but also casts list of strings into comma separated string so store it in DB.
+        """
+        for item in v:
+            assert item.isalnum(), "interests must be alpha-numericals"
+        return ", ".join(v)
 
 
 class UserPasswordPayload(BaseModel):
