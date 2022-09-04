@@ -1,76 +1,99 @@
 from fastapi import Depends, FastAPI
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError
 
-from auth import authenticate_user, create_access_token, decode_jwt
-from exceptions import credentials_exception, user_exists_exception
-from schemas import Post, Token, User
+from auth import authenticate_user, create_access_token, decode_jwt, get_password_hash
+from exceptions import (
+    not_authorized_exception,
+    user_exists_exception,
+    user_not_found_exception,
+)
+from models import User, create_tables, create_user
+from schemas import (
+    Post,
+    Token,
+    UpdateUserProfilePayload,
+    UserPasswordPayload,
+    UserProfile,
+)
 
-fake_users_db = {}
-
+create_tables()
 
 app = FastAPI(
-    title="Embed test API",
+    title="Embed.xyz test API",
     description="Some basic user-post CRUD API example...",
     contact={"email": "zombeer@gmail.com"},
     version="0.1.0",
-    servers=[{"url": "https://localhost"}],
+    servers=[{"url": "http://localhost:8000"}],
 )
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 user_model_output = {
-    "response_model": User,
+    "response_model": UserProfile,
     "response_model_exclude_none": True,
     "response_model_exclude": ["password"],
 }
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
-
+    """
+    Get instance of current User using token payload
+    """
     try:
         payload = decode_jwt(token)
         username = payload.get("sub")
         if username is None:
-            raise
+            raise user_not_found_exception
     except JWTError:
-        raise credentials_exception
-    # user = get_user(fake_users_db, username=username)
-    user = User(name=username)
+        raise not_authorized_exception
+    user = User.get_or_none(name=username)
     if user is None:
-        raise credentials_exception
+        raise not_authorized_exception
     return user
 
 
 @app.post("/signup", response_model=Token)
-async def signup(username: str, password: str) -> Token:
-    # create user
-    user = User(name=username, password=password)
+async def signup(
+    payload: UserPasswordPayload,
+) -> Token:
+    """
+    Create new User by selecting a username and password.
+    """
+    payload.password = get_password_hash(payload.password)
+    user = create_user(**payload.dict())
+    if not user:
+        raise user_exists_exception
+
     access_token = create_access_token(data={"sub": user.name})
     return Token(access_token=access_token, token_type="bearer")
 
 
 @app.post("/token", response_model=Token)
 async def login_for_access_token(
-    form_data: OAuth2PasswordRequestForm = Depends(),
+    payload: UserPasswordPayload,
 ) -> Token:
-    user = authenticate_user(fake_users_db, form_data.username, form_data.password)
-    if not user:
-        raise credentials_exception
+    """
+    User login via username/password pair.
+    """
+    user = authenticate_user(payload.username, payload.password)
     access_token = create_access_token(data={"sub": user.name})
     return Token(access_token=access_token, token_type="bearer")
 
 
-@app.get("/user", **user_model_output)
-async def get_user(current_user: User = Depends(get_current_user)) -> User:
-    return current_user
+@app.get("/user", response_model=UserProfile)
+async def get_user(current_user: User = Depends(get_current_user)) -> UserProfile:
+    return UserProfile.from_orm(current_user)
 
 
-@app.put("/user", **user_model_output)
+@app.put("/user", response_model=UserProfile)
 async def update_user(
-    updated_data: User, current_user: User = Depends(get_current_user)
+    payload: UpdateUserProfilePayload,
+    current_user: User = Depends(get_current_user),
 ) -> User:
-    return updated_data
+    payload_dict = payload.dict(exclude_none=True)
+    current_user.update(**payload_dict).execute()
+    return User.get_by_id(current_user.name)
 
 
 @app.get("/user/{user_id}", **user_model_output)
@@ -80,12 +103,10 @@ async def user_by_id(user_id: int):
 
 @app.get(
     "/users",
-    response_model=list[User],
-    response_model_exclude_none=True,
-    response_model_exclude=["password"],
+    response_model=list[UserProfile],
 )
-async def get_users_list() -> list[User]:
-    return [User(name="Vasya"), User(name="Volodya", password="ololo")]
+async def get_users_list() -> list[UserProfile]:
+    return [UserProfile(name="Vasya"), UserProfile(name="Volodya", password="ololo")]
 
 
 @app.get(

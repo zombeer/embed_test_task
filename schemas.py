@@ -5,12 +5,7 @@ from fastapi import Body
 from pydantic import BaseModel, validator
 
 
-class OrmModel(BaseModel):
-    class Config:
-        orm_mode = True
-
-
-class Post(OrmModel):
+class Post(BaseModel):
     id: int
     title: str
     text: str
@@ -18,28 +13,52 @@ class Post(OrmModel):
     is_new: bool = False
 
 
-class User(OrmModel):
-    name: str
-    password: str | None
-    country: str | None = None
-    city: str | None = None
-    birthdate: date | None = None
-    interests: list[str] = []
-    bio: str = ""
-    posts: list[Post] = []
-    subscriptions: list[str] = []
-    subscribers_count: int = 0
-    subscriptions_count: int = 0
-    last_activity: datetime | None = None
-
-
 class GenericApiResponse(BaseModel):
     code: int
     message: str
 
 
+class UserProfile(BaseModel):
+    name: str
+    country: str
+    city: str
+    birthdate: date | None
+    interests: list[str]
+    bio: str
+    subscriptions: list[str]
+    subscribers_count: int
+    subscriptions_count: int
+    post_count: int
+
+    class Config:
+        orm_mode = True
+
+
+class UpdateUserProfilePayload(BaseModel):
+    """
+    User can update the following parts of his/her profile: short biography, birth date, country, city, list of interests.
+    """
+
+    country: str | None = Body(None, title="Users country")
+    city: str | None = Body(None, title="Users city")
+    birthdate: date | None = Body(None, title="User birth date")
+    interests: list[str] = Body([], title="List of user interests")
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "country": "Spain",
+                "city": "Madrid",
+                "birthdate": "2017-07-21",
+                "interests": ["sleep", "code"],
+            }
+        }
+
+
 class UserPasswordPayload(BaseModel):
-    """User and Password payload model with validations."""
+    """
+    Username + Password payload for registering and signing in.
+    """
 
     username: str = Body(..., title="Username of new user")
     password: str = Body(..., title="Password for the new user")
