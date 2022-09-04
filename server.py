@@ -1,4 +1,6 @@
-from fastapi import Depends, FastAPI
+from copy import copy
+
+from fastapi import Depends, FastAPI, Path
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError
 
@@ -8,13 +10,14 @@ from exceptions import (
     user_exists_exception,
     user_not_found_exception,
 )
-from models import User, create_tables, create_user
+from models import Post, User, create_tables, create_user
 from schemas import (
-    Post,
+    PostSchema,
     Token,
     UpdateUserProfilePayload,
     UserPasswordPayload,
     UserProfile,
+    UserProfileWithPosts,
 )
 
 create_tables()
@@ -38,7 +41,7 @@ user_model_output = {
 
 async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
     """
-    Get instance of current User using token payload
+    Get instance of current User using token payload or raise corresponding exception.
     """
     try:
         payload = decode_jwt(token)
@@ -53,12 +56,17 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
     return user
 
 
-@app.post("/signup", response_model=Token)
+@app.post(
+    "/signup",
+    response_model=Token,
+    tags=["users", "auth"],
+    name="Create new user",
+)
 async def signup(
     payload: UserPasswordPayload,
 ) -> Token:
     """
-    Create new User by selecting a username and password.
+    Create new User by providing a username and password.
     """
     payload.password = get_password_hash(payload.password)
     user = create_user(**payload.dict())
@@ -69,7 +77,12 @@ async def signup(
     return Token(access_token=access_token, token_type="bearer")
 
 
-@app.post("/token", response_model=Token)
+@app.post(
+    "/token",
+    response_model=Token,
+    name="Obtain new token",
+    tags=["users", "auth"],
+)
 async def login_for_access_token(
     payload: UserPasswordPayload,
 ) -> Token:
@@ -81,37 +94,72 @@ async def login_for_access_token(
     return Token(access_token=access_token, token_type="bearer")
 
 
-@app.get("/user", response_model=UserProfile)
+@app.get(
+    "/user",
+    response_model=UserProfile,
+    name="Get current User profile data.",
+    tags=["users"],
+)
 async def get_user(current_user: User = Depends(get_current_user)) -> UserProfile:
+    """
+    Get current User profile data.
+    """
     return UserProfile.from_orm(current_user)
 
 
-@app.put("/user", response_model=UserProfile)
+@app.put(
+    "/user",
+    response_model=UserProfile,
+    name="Update current User profile data",
+    tags=["users"],
+)
 async def update_user(
     payload: UpdateUserProfilePayload,
     current_user: User = Depends(get_current_user),
 ) -> User:
+    """
+    Update current User profile data.
+    """
     payload_dict = payload.dict(exclude_none=True)
-    current_user.update(**payload_dict).execute()
+    User.update(**payload_dict).where(User.name == current_user.name).execute()
     return User.get_by_id(current_user.name)
 
 
-@app.get("/user/{user_id}", **user_model_output)
-async def user_by_id(user_id: int):
-    return User(id=user_id, name=f"User_{user_id}")
+@app.get(
+    "/user/{username}",
+    response_model=UserProfile,
+    name="Get User profile by username",
+    tags=["users"],
+)
+async def user_by_username(username: str = Path(..., title="Username of target User.")):
+    user = User.get_by_id(username)
+    return UserProfile.from_orm(user)
 
 
 @app.get(
     "/users",
-    response_model=list[UserProfile],
+    response_model=list[UserProfileWithPosts],
+    name="List all user profiles with their 5 latest posts.",
+    tags=["users"],
 )
-async def get_users_list() -> list[UserProfile]:
-    return [UserProfile(name="Vasya"), UserProfile(name="Volodya", password="ololo")]
+async def get_users_list() -> list[UserProfileWithPosts]:
+    """
+    List of all users + 5 most recent posts
+    """
+    result = []
+    for u in User.select():
+        user = copy(u)
+        user.posts = [x for x in u.posts.order_by(Post.id.desc()).limit(5)]
+        profileWithPosts = UserProfileWithPosts.from_orm(user)
+        result.append(profileWithPosts)
+    return result
 
 
 @app.get(
     "/user/posts",
-    response_model=Post,
+    name="Posts of the current user",
+    tags=["posts"],
+    response_model=list[PostSchema],
 )
 async def get_user_posts(current_user: User = Depends(get_current_user)) -> list[Post]:
     return []
