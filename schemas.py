@@ -24,8 +24,9 @@ class User(OrmModel):
     city: str | None = None
     birthDate: date | None = None
     interests: list[str] = []
-    bio: str | None = None
+    bio: str = ""
     posts: list[Post] = []
+    subscriptions: list[str] = []
     subscribers_count: int = 0
     subscriptions_count: int = 0
     last_login: datetime | None = None
@@ -34,3 +35,8 @@ class User(OrmModel):
 class GenericApiResponse(BaseModel):
     code: int
     message: str
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
