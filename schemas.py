@@ -39,6 +39,8 @@ class GenericApiResponse(BaseModel):
 
 
 class UserPasswordPayload(BaseModel):
+    """User and Password payload model with validations."""
+
     username: str = Body(..., title="Username of new user")
     password: str = Body(..., title="Password for the new user")
 
@@ -60,6 +62,14 @@ class UserPasswordPayload(BaseModel):
             re.search(r"[!@#$%^&*()_]", v)
         ), "Password must contain at least one symbol out of !@#$%^&*()_"
         return v
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "username": "BestUser1",
+                "password": "OloloTrolo123#@!",
+            }
+        }
 
 
 class Token(BaseModel):
