@@ -54,6 +54,9 @@ class User(Model):
     def subscribe(self, username: str):
         return Subscription.create(source=self.name, target=username)
 
+    def unsubscribe(self, username: str):
+        return Subscription.select().where(source=self.name, target=username).delete()
+
     def create_post(self, title: str, text: str):
         return Post.create(title=title, text=text, user=self)
 
