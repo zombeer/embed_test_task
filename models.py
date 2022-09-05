@@ -4,6 +4,7 @@ from peewee import (
     CharField,
     DateField,
     DateTimeField,
+    DoesNotExist,
     ForeignKeyField,
     Model,
     TextField,
@@ -11,6 +12,7 @@ from peewee import (
 from playhouse.hybrid import hybrid_property
 
 from database import db
+from exceptions import subscription_not_found_exception, user_not_found_exception
 
 
 class User(Model):
@@ -33,7 +35,7 @@ class User(Model):
 
     @hybrid_property
     def interests(self):
-        """Get list of user interests from a comma separated string."""
+        """Gets list of user interests from a comma separated string stored in DB."""
         return [x.strip() for x in self._interests.split(",")]
 
     @hybrid_property
@@ -52,14 +54,35 @@ class User(Model):
     def subscriptions(self) -> list[str]:
         return [x.target.name for x in self.subscribed_to]
 
-    def subscribe(self, username: str):
-        return Subscription.create(source=self.name, target=username)
+    def add_subscription(self, username: str):
+        """
+        Adds username to self.subscriptons.
+        Added an extra check because Sqlite wasn't following foreign key constraints for some reason.
+        """
+        target = User.get_or_none(User.name == username)
+        if not target:
+            raise user_not_found_exception
+        return Subscription.insert(source=self, target=target).execute()
 
-    def unsubscribe(self, username: str):
-        return Subscription.select().where(source=self.name, target=username).delete()
+    def delete_subscription(self, username: str):
+        try:
+            subscription = Subscription.get(source=self.name, target=username)
+        except DoesNotExist:
+            raise subscription_not_found_exception
+        Subscription.delete_by_id(subscription.id)
 
-    def create_post(self, title: str, text: str):
-        return Post.create(title=title, text=text, user=self)
+    def add_post(self, title: str, text: str):
+        return Post.create(title=title, text=text, author=self)
+
+    def feed(self):
+        """
+        Posts by current user subscriptions
+        """
+        subquery = Subscription.select(Subscription.target).where(
+            Subscription.source == self.name
+        )
+        posts = Post.select().where(Post.author.in_(subquery)).order_by(Post.id.desc())
+        return posts
 
     def bump(self):
         """
@@ -76,7 +99,7 @@ class Post(Model):
     """
 
     # id field will be created by ORM
-    user = ForeignKeyField(User, backref="posts")
+    author = ForeignKeyField(User, backref="posts")
     title = CharField(100)
     text = TextField()
     created = DateTimeField(default=datetime.now)
@@ -84,6 +107,15 @@ class Post(Model):
     class Meta:
         db_table = "posts"
         database = db
+
+    def as_dict(self):
+        return dict(
+            id=self.id,
+            title=self.title,
+            text=self.text,
+            author=self.author.name,
+            created=self.created,
+        )
 
 
 class Subscription(Model):
@@ -103,7 +135,7 @@ class Subscription(Model):
         indexes = ((("source", "target"), True),)
 
 
-def create_user(username: str, password: str) -> User | None:
+def add_user(username: str, password: str) -> User | None:
     """
     Creates and returns new User() or None if user exists.
     """
