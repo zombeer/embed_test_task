@@ -15,3 +15,13 @@ user_exists_exception = HTTPException(
 user_not_found_exception = HTTPException(
     status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
 )
+
+# Exeption to handle duplicate subscription error
+subscription_exists_exception = HTTPException(
+    status_code=status.HTTP_409_CONFLICT, detail="Subscription already exists"
+)
+
+# Exception to handle user not found error
+subscription_not_found_exception = HTTPException(
+    status_code=status.HTTP_404_NOT_FOUND, detail="Subscription not found"
+)
