@@ -1,7 +1,7 @@
 import re
 from datetime import date, datetime
 
-from fastapi import Body
+from fastapi import Body, Query
 from pydantic import BaseModel, Field, validator
 
 
@@ -139,6 +139,12 @@ class Username(BaseModel):
     def validate_username(cls, v):
         validate_username(cls, v)
         return v
+
+
+class PostFilterPayload(BaseModel):
+    keyword: str | None = Query(None, title="Keyword to loop up in post title")
+    start: date | None = Query(None, title="Post shoud be created after this date")
+    end: date | None = Query(None, title="Post should be created before this date")
 
 
 class Token(BaseModel):
