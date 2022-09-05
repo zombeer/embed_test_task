@@ -8,6 +8,7 @@ from peewee import (
     Model,
     TextField,
 )
+from playhouse.hybrid import hybrid_property
 
 from database import db
 
@@ -30,24 +31,24 @@ class User(Model):
         db_table = "users"
         database = db
 
-    @property
+    @hybrid_property
     def interests(self):
         """Get list of user interests from a comma separated string."""
         return [x.strip() for x in self._interests.split(",")]
 
-    @property
+    @hybrid_property
     def subscribers_count(self) -> int:
         return self.subscribed_by.count()
 
-    @property
+    @hybrid_property
     def subscriptions_count(self) -> int:
         return self.subscribed_to.count()
 
-    @property
+    @hybrid_property
     def post_count(self) -> int:
-        return Post.select(Post.id).where(Post.user == self).count()
+        return len(self.posts)
 
-    @property
+    @hybrid_property
     def subscriptions(self) -> list[str]:
         return [x.target.name for x in self.subscribed_to]
 
@@ -60,13 +61,21 @@ class User(Model):
     def create_post(self, title: str, text: str):
         return Post.create(title=title, text=text, user=self)
 
+    def bump(self):
+        """
+        Small helper to update last_activity timestamp.
+        """
+        User.update(last_activity=datetime.now()).where(
+            User.name == self.name
+        ).execute()
+
 
 class Post(Model):
     """
     Post model
     """
 
-    # id field will be created by database
+    # id field will be created by ORM
     user = ForeignKeyField(User, backref="posts")
     title = CharField(100)
     text = TextField()
@@ -83,13 +92,15 @@ class Subscription(Model):
     Just a join table for User-User relationship.
     """
 
-    # id field will be created by database
+    # id field will be created by ORM
     source = ForeignKeyField(User, backref="subscribed_to")
     target = ForeignKeyField(User, backref="subscribed_by")
 
     class Meta:
         db_table = "subscriptions"
         database = db
+        # Adding unique constraint to both field to avoid duplicates.
+        indexes = ((("source", "target"), True),)
 
 
 def create_user(username: str, password: str) -> User | None:

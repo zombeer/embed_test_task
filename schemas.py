@@ -70,7 +70,7 @@ class UpdateUserProfilePayload(BaseModel):
         return ", ".join(v)
 
 
-class UserPasswordPayload(BaseModel):
+class LoginPayload(BaseModel):
     """
     Username + Password payload for registering and signing in.
     """
@@ -102,6 +102,19 @@ class UserPasswordPayload(BaseModel):
             "example": {
                 "username": "BestUser1",
                 "password": "OloloTrolo123#@!",
+            }
+        }
+
+
+class NewPostPayload(BaseModel):
+    title: str = Body(..., title="Title of the new post")
+    text: str = Body(..., title="Text of the new post")
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "title": "BestUser1",
+                "text": "OloloTrolo123#@!",
             }
         }
 
