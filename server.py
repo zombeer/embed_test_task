@@ -6,15 +6,22 @@ from auth import authenticate_user, create_access_token, decode_jwt, get_passwor
 from exceptions import (
     not_authorized_exception,
     subscription_exists_exception,
-    subscription_not_found_exception,
     user_exists_exception,
     user_not_found_exception,
 )
-from models import IntegrityError, Post, User, add_user, create_tables
+from models import (
+    IntegrityError,
+    Post,
+    User,
+    add_user,
+    create_tables,
+    post_filter_query_builder,
+)
 from schemas import (
     LoginPayload,
     MessageSchema,
     NewPostPayload,
+    PostFilterPayload,
     PostSchema,
     PostWithAuthorSchema,
     Token,
@@ -200,13 +207,15 @@ async def new_post(
     response_model=list[PostSchema],
 )
 async def get_current_user_posts(
+    q: PostFilterPayload = Depends(),
     current_user: User = Depends(get_current_user),
 ) -> list[PostSchema]:
     """
     List of current User posts.
     """
     result = []
-    for post in list(current_user.posts):
+    posts_query = post_filter_query_builder(current_user.posts, **q.dict())
+    for post in list(posts_query):
         result.append(PostSchema.from_orm(post))
     return result
 
@@ -217,7 +226,10 @@ async def get_current_user_posts(
     tags=["Posts"],
     response_model=list[PostSchema],
 )
-async def get_user_posts_by_username(username: str) -> list[PostSchema]:
+async def get_user_posts_by_username(
+    username: str,
+    q: PostFilterPayload = Depends(),
+) -> list[PostSchema]:
     """
     List posts of the user with target username.
     """
@@ -225,7 +237,8 @@ async def get_user_posts_by_username(username: str) -> list[PostSchema]:
     if not user:
         raise user_not_found_exception
     result = []
-    for post in list(user.posts):
+    posts_query = post_filter_query_builder(user.posts, **q.dict())
+    for post in list(posts_query):
         result.append(PostSchema.from_orm(post))
     return result
 
@@ -237,6 +250,7 @@ async def get_user_posts_by_username(username: str) -> list[PostSchema]:
     response_model=list[PostWithAuthorSchema],
 )
 async def get_current_user_subscriptions(
+    q: PostFilterPayload = Depends(),
     current_user: User = Depends(get_current_user),
 ) -> list[PostWithAuthorSchema]:
     """
@@ -244,9 +258,10 @@ async def get_current_user_subscriptions(
     It was quite complicated to write proper docstring to this function (:
     """
     result = []
+    posts_query = post_filter_query_builder(current_user.feed(), **q.dict())
 
-    for p in current_user.feed():
-        result.append(PostWithAuthorSchema(**p.as_dict()))
+    for post in posts_query:
+        result.append(PostWithAuthorSchema(**post.as_dict()))
     return result
 
 
@@ -283,5 +298,7 @@ async def delete_subscription(
     """
     Deletes provided username from current user subscriptions.
     """
+    # User.delete_subscription() can raise subscription_not_found_exception by itself. In order to handle exceprions properly I would add two levels of custom exceptions:
+    # Model level and server level to isolate models dependencies from server package. Keeping this one as it is just for saving time.
     current_user.delete_subscription(payload.username)
     return MessageSchema(detail="Subscription removed succeessfully")
