@@ -5,16 +5,21 @@ from jose import JWTError
 from auth import authenticate_user, create_access_token, decode_jwt, get_password_hash
 from exceptions import (
     not_authorized_exception,
+    subscription_exists_exception,
+    subscription_not_found_exception,
     user_exists_exception,
     user_not_found_exception,
 )
-from models import Post, User, create_tables, create_user
+from models import IntegrityError, Post, User, add_user, create_tables
 from schemas import (
     LoginPayload,
+    MessageSchema,
     NewPostPayload,
     PostSchema,
+    PostWithAuthorSchema,
     Token,
     UpdateUserProfilePayload,
+    Username,
     UserProfile,
     UserProfileWithPosts,
 )
@@ -64,7 +69,7 @@ async def signup(
     Create new User by providing a username and password.
     """
     payload.password = get_password_hash(payload.password)
-    user = create_user(**payload.dict())
+    user = add_user(**payload.dict())
     if not user:
         raise user_exists_exception
 
@@ -134,7 +139,7 @@ async def get_top20_profiles() -> list[UserProfileWithPosts]:
 )
 async def get_user(current_user: User = Depends(get_current_user)) -> UserProfile:
     """
-    Get current User profile data.
+    Gets current User profile data.
     """
     return UserProfile.from_orm(current_user)
 
@@ -150,7 +155,7 @@ async def update_user(
     current_user: User = Depends(get_current_user),
 ) -> User:
     """
-    Update current User profile data.
+    Updates current User profile data.
     """
     payload_dict = payload.dict(exclude_none=True)
     User.update(**payload_dict).where(User.name == current_user.name).execute()
@@ -165,7 +170,7 @@ async def update_user(
 )
 async def user_by_username(username: str = Path(..., title="Username of target User.")):
     """
-    Get current User profile data
+    Gets current User profile data.
     """
     user = User.get_by_id(username)
     return UserProfile.from_orm(user)
@@ -182,9 +187,9 @@ async def new_post(
     current_user: User = Depends(get_current_user),
 ) -> PostSchema:
     """
-    Create a new post by current User
+    Creates a new post by current User.
     """
-    new_post = current_user.create_post(**payload.dict())
+    new_post = current_user.add_post(**payload.dict())
     return PostSchema.from_orm(new_post)
 
 
@@ -198,7 +203,7 @@ async def get_current_user_posts(
     current_user: User = Depends(get_current_user),
 ) -> list[PostSchema]:
     """
-    List of current User posts
+    List of current User posts.
     """
     result = []
     for post in list(current_user.posts):
@@ -214,7 +219,7 @@ async def get_current_user_posts(
 )
 async def get_user_posts_by_username(username: str) -> list[PostSchema]:
     """
-    List posts of the user with target username
+    List posts of the user with target username.
     """
     user = User.get_or_none(User.name == username).execute()
     if not user:
@@ -223,3 +228,60 @@ async def get_user_posts_by_username(username: str) -> list[PostSchema]:
     for post in list(user.posts):
         result.append(PostSchema.from_orm(post))
     return result
+
+
+@app.get(
+    "/user/me/subscriptions",
+    name="Posts of current user subscripte",
+    tags=["Subscriptions"],
+    response_model=list[PostWithAuthorSchema],
+)
+async def get_current_user_subscriptions(
+    current_user: User = Depends(get_current_user),
+) -> list[PostWithAuthorSchema]:
+    """
+    Lists posts by current user subscriptions.
+    It was quite complicated to write proper docstring to this function (:
+    """
+    result = []
+
+    for p in current_user.feed():
+        result.append(PostWithAuthorSchema(**p.as_dict()))
+    return result
+
+
+@app.post(
+    "/user/me/subscriptions",
+    name="Add subscription",
+    tags=["Subscriptions"],
+    response_model=MessageSchema,
+)
+async def subscribe(
+    payload: Username,
+    current_user: User = Depends(get_current_user),
+) -> list[PostWithAuthorSchema]:
+    """
+    Adds provided username to current user subscriptions.
+    """
+    try:
+        current_user.add_subscription(payload.username)
+    except IntegrityError:
+        raise subscription_exists_exception
+    return MessageSchema(detail="Subscription added succeessfully")
+
+
+@app.delete(
+    "/user/me/subscriptions",
+    name="Delete subscription",
+    tags=["Subscriptions"],
+    response_model=MessageSchema,
+)
+async def delete_subscription(
+    payload: Username,
+    current_user: User = Depends(get_current_user),
+) -> list[PostSchema]:
+    """
+    Deletes provided username from current user subscriptions.
+    """
+    current_user.delete_subscription(payload.username)
+    return MessageSchema(detail="Subscription removed succeessfully")

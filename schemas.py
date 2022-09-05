@@ -2,7 +2,18 @@ import re
 from datetime import date, datetime
 
 from fastapi import Body
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, Field, validator
+
+
+def validate_username(cls, v):
+    assert v.isalnum(), "Username must contain only letters or numbers"
+    assert len(v) < 15, "Username length must be less than 15 symbols"
+    assert len(v) > 3, "Username length must be more than 3 symbols"
+    return v
+
+
+class MessageSchema(BaseModel):
+    detail: str = Field(..., title="Details of operation")
 
 
 class PostSchema(BaseModel):
@@ -13,6 +24,10 @@ class PostSchema(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class PostWithAuthorSchema(PostSchema):
+    author: str
 
 
 class GenericApiResponse(BaseModel):
@@ -80,9 +95,7 @@ class LoginPayload(BaseModel):
 
     @validator("username")
     def validate_username(cls, v):
-        assert v.isalnum(), "Username must contain only letters or numbers"
-        assert len(v) < 15, "Username length must be less than 15 symbols"
-        assert len(v) > 3, "Username length must be more than 3 symbols"
+        validate_username(cls, v)
         return v
 
     @validator("password")
@@ -117,6 +130,15 @@ class NewPostPayload(BaseModel):
                 "text": "OloloTrolo123#@!",
             }
         }
+
+
+class Username(BaseModel):
+    username: str = Body(..., title="Username")
+
+    @validator("username")
+    def validate_username(cls, v):
+        validate_username(cls, v)
+        return v
 
 
 class Token(BaseModel):
