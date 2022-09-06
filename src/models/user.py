@@ -22,7 +22,7 @@ class User(Model):
     last_activity = DateTimeField(null=True)
 
     class Meta:
-        db_table = "users"
+        table_name = "users"
         database = db
 
     @hybrid_property

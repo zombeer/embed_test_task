@@ -17,7 +17,7 @@ class Post(Model):
     created = DateTimeField(default=datetime.now)
 
     class Meta:
-        db_table = "posts"
+        table_name = "posts"
         database = db
 
     def as_dict(self):
