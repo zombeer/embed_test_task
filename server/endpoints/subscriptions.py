@@ -3,13 +3,8 @@ from fastapi import APIRouter, Depends
 from models import IntegrityError
 from models.user import User
 from models.utils import post_filter_query_builder
-from schemas import (
-    MessageSchema,
-    PostFilterPayload,
-    PostSchema,
-    PostWithAuthorSchema,
-    Username,
-)
+from schemas.inbound import PostFilterPayload, Username
+from schemas.outbound import MessageSchema, PostSchema, PostWithAuthorSchema
 from server.utils import get_current_user
 
 router = APIRouter(

@@ -1,58 +1,8 @@
 import re
-from datetime import date, datetime
+from datetime import date
 
 from fastapi import Body, Query
-from pydantic import BaseModel, Field, validator
-
-
-def validate_username(cls, v):
-    assert v.isalnum(), "Username must contain only letters or numbers"
-    assert len(v) < 15, "Username length must be less than 15 symbols"
-    assert len(v) > 3, "Username length must be more than 3 symbols"
-    return v
-
-
-class MessageSchema(BaseModel):
-    detail: str = Field(..., title="Details of operation")
-
-
-class PostSchema(BaseModel):
-    id: int
-    title: str
-    text: str
-    created: datetime
-
-    class Config:
-        orm_mode = True
-
-
-class PostWithAuthorSchema(PostSchema):
-    author: str
-
-
-class GenericApiResponse(BaseModel):
-    code: int
-    message: str
-
-
-class UserProfile(BaseModel):
-    name: str
-    country: str
-    city: str
-    birthdate: date | None
-    interests: list[str]
-    bio: str
-    subscriptions: list[str]
-    subscribers_count: int
-    subscriptions_count: int
-    post_count: int
-
-    class Config:
-        orm_mode = True
-
-
-class UserProfileWithPosts(UserProfile):
-    posts: list[PostSchema] = []
+from pydantic import BaseModel, validator
 
 
 class UpdateUserProfilePayload(BaseModel):
@@ -87,18 +37,23 @@ class UpdateUserProfilePayload(BaseModel):
         return ", ".join(v)
 
 
-class LoginPayload(BaseModel):
+class Username(BaseModel):
+    username: str = Body(..., title="Unique name of the user")
+
+    @validator("username")
+    def validate_username(cls, v):
+        assert v.isalnum(), "Username must contain only letters or numbers"
+        assert len(v) < 15, "Username length must be less than 15 symbols"
+        assert len(v) > 3, "Username length must be more than 3 symbols"
+        return v
+
+
+class LoginPayload(Username):
     """
     Username + Password payload for registering and signing in.
     """
 
-    username: str = Body(..., title="Username of new user")
     password: str = Body(..., title="Password for the new user")
-
-    @validator("username")
-    def validate_username(cls, v):
-        validate_username(cls, v)
-        return v
 
     @validator("password")
     def validate_password(cls, v):
@@ -121,34 +76,36 @@ class LoginPayload(BaseModel):
         }
 
 
-class NewPostPayload(BaseModel):
-    title: str = Body(..., title="Title of the new post")
-    text: str = Body(..., title="Text of the new post")
-
-    class Config:
-        schema_extra = {
-            "example": {
-                "title": "BestUser1",
-                "text": "OloloTrolo123#@!",
-            }
-        }
-
-
-class Username(BaseModel):
-    username: str = Body(..., title="Username")
-
-    @validator("username")
-    def validate_username(cls, v):
-        validate_username(cls, v)
-        return v
-
-
 class PostFilterPayload(BaseModel):
+    """
+    Values for posts and subscription post filtration.
+    """
+
     keyword: str | None = Query(None, title="Keyword to loop up in post title")
     start: date | None = Query(None, title="Post shoud be created after this date")
     end: date | None = Query(None, title="Post should be created before this date")
 
 
-class Token(BaseModel):
-    access_token: str
-    token_type: str
+class NewPostPayload(BaseModel):
+    """
+    Payload for adding new post.
+    """
+
+    title: str = Body(..., title="Title of the new post")
+    text: str = Body(..., title="Text of the new post")
+
+    @validator("title")
+    def validate_title(cls, v):
+        assert 1 < len(v) < 100, "Post title should 1 to 100 characters long"
+
+    @validator("text")
+    def validate_text(cls, v):
+        assert 10 < len(v) < 1000, "Post text should 10 to 1000 characters long"
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "title": "Best post title ever!",
+                "text": "Some lorem ipsum text which is even better than post title!",
+            }
+        }
