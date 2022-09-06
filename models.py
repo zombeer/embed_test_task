@@ -168,5 +168,7 @@ def post_filter_query_builder(
 
 
 def create_tables():
-    """Helper to initialize tables"""
+    """
+    Helper to initialize tables
+    """
     db.create_tables([User, Post, Subscription])
