@@ -38,6 +38,10 @@ class UpdateUserProfilePayload(BaseModel):
 
 
 class Username(BaseModel):
+    """
+    Basic username field with validator.
+    """
+
     username: str = Body(..., title="Unique name of the user")
 
     @validator("username")
@@ -46,6 +50,13 @@ class Username(BaseModel):
         assert len(v) < 15, "Username length must be less than 15 symbols"
         assert len(v) > 3, "Username length must be more than 3 symbols"
         return v
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "username": "BestUser1",
+            }
+        }
 
 
 class LoginPayload(Username):
@@ -84,6 +95,15 @@ class PostFilterPayload(BaseModel):
     keyword: str | None = Query(None, title="Keyword to loop up in post title")
     start: date | None = Query(None, title="Post shoud be created after this date")
     end: date | None = Query(None, title="Post should be created before this date")
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "keyword": "keyword",
+                "start": "2020-09-06",
+                "end": "2022-09-06",
+            }
+        }
 
 
 class NewPostPayload(BaseModel):

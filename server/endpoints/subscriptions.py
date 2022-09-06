@@ -15,7 +15,6 @@ router = APIRouter(
 @router.get(
     "/user/me/subscriptions",
     name="Posts of current user subscripte",
-    tags=["Subscriptions"],
     response_model=list[PostWithAuthorSchema],
 )
 async def get_current_user_subscriptions(
@@ -37,7 +36,6 @@ async def get_current_user_subscriptions(
 @router.post(
     "/user/me/subscriptions",
     name="Add subscription",
-    tags=["Subscriptions"],
     response_model=MessageSchema,
 )
 async def subscribe(
@@ -57,7 +55,6 @@ async def subscribe(
 @router.delete(
     "/user/me/subscriptions",
     name="Delete subscription",
-    tags=["Subscriptions"],
     response_model=MessageSchema,
 )
 async def delete_subscription(
