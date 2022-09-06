@@ -4,9 +4,7 @@ from exceptions import subscription_not_found_exception, user_not_found_exceptio
 from peewee import CharField, DateField, DateTimeField, DoesNotExist, Model, TextField
 from playhouse.hybrid import hybrid_property
 
-from models import db
-from models.post import Post
-from models.subscription import Subscription
+from models import Post, Subscription, db
 
 
 class User(Model):

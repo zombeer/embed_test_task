@@ -4,8 +4,6 @@ from peewee import CharField, DateTimeField, DeferredForeignKey, Model, TextFiel
 
 from models import db
 
-# from models.user import User
-
 
 class Post(Model):
     """
