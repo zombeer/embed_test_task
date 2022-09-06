@@ -1,6 +1,6 @@
 from exceptions import user_exists_exception
 from fastapi import APIRouter
-from models import add_user
+from models.utils import add_user
 from schemas import LoginPayload, Token
 from server.utils import authenticate_user, create_access_token, get_password_hash
 

@@ -1,19 +1,12 @@
-from datetime import date, datetime
+from datetime import datetime
 
-from peewee import (
-    CharField,
-    DateField,
-    DateTimeField,
-    DoesNotExist,
-    ForeignKeyField,
-    IntegrityError,
-    Model,
-    TextField,
-)
+from exceptions import subscription_not_found_exception, user_not_found_exception
+from peewee import CharField, DateField, DateTimeField, DoesNotExist, Model, TextField
 from playhouse.hybrid import hybrid_property
 
-from database import db
-from exceptions import subscription_not_found_exception, user_not_found_exception
+from models import db
+from models.post import Post
+from models.subscription import Subscription
 
 
 class User(Model):
@@ -92,83 +85,3 @@ class User(Model):
         User.update(last_activity=datetime.now()).where(
             User.name == self.name
         ).execute()
-
-
-class Post(Model):
-    """
-    Post model
-    """
-
-    # id field will be created by ORM
-    author = ForeignKeyField(User, backref="posts")
-    title = CharField(100)
-    text = TextField()
-    created = DateTimeField(default=datetime.now)
-
-    class Meta:
-        db_table = "posts"
-        database = db
-
-    def as_dict(self):
-        return dict(
-            id=self.id,
-            title=self.title,
-            text=self.text,
-            author=self.author.name,
-            created=self.created,
-        )
-
-
-class Subscription(Model):
-    """
-    Subscription model.
-    Just a join table for User-User relationship.
-    """
-
-    # id field will be created by ORM
-    source = ForeignKeyField(User, backref="subscribed_to")
-    target = ForeignKeyField(User, backref="subscribed_by")
-
-    class Meta:
-        db_table = "subscriptions"
-        database = db
-        # Adding unique constraint to both field to avoid duplicates.
-        indexes = ((("source", "target"), True),)
-
-
-def add_user(username: str, password: str) -> User | None:
-    """
-    Creates and returns new User() or None if user exists.
-    """
-    user, created = User.get_or_create(name=username, defaults=dict(password=password))
-    if created:
-        return user
-    else:
-        return None
-
-
-def post_filter_query_builder(
-    query,
-    keyword: str | None = None,
-    start: date | None = None,
-    end: date | None = None,
-):
-    """
-    Builds filter query to be applied to list posts query.
-    User can search his/her posts by the title name via a simple substring match.
-    User can search his/her posts by date published via start date and end date filters
-    """
-    if keyword:
-        query = query.where(Post.title.contains(keyword))
-    if start:
-        query = query.where(Post.created.date() >= start)
-    if end:
-        query = query.where(Post.created.date() <= end)
-    return query
-
-
-def create_tables():
-    """
-    Helper to initialize tables
-    """
-    db.create_tables([User, Post, Subscription])

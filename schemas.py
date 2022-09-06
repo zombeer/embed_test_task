@@ -62,6 +62,7 @@ class UpdateUserProfilePayload(BaseModel):
 
     country: str | None = Body(None, title="Users country")
     city: str | None = Body(None, title="Users city")
+    bio: str | None = Body(None, title="Users shoty biography")
     birthdate: date | None = Body(None, title="User birth date")
     interests: list[str] = Body([], title="List of user interests")
 
@@ -70,7 +71,8 @@ class UpdateUserProfilePayload(BaseModel):
             "example": {
                 "country": "Spain",
                 "city": "Madrid",
-                "birthdate": "2017-07-21",
+                "birthdate": "1984-07-21",
+                "bio": "Let's talk about yourself...",
                 "interests": ["sleep", "code"],
             }
         }

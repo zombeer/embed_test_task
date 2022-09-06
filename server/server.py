@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from models import create_tables
+from models.utils import create_tables
 
 from server.endpoints.auth import auth_router
 from server.endpoints.posts import router as posts_router

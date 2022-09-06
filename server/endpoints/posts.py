@@ -1,6 +1,7 @@
 from exceptions import user_not_found_exception
 from fastapi import APIRouter, Depends
-from models import User, post_filter_query_builder
+from models.user import User
+from models.utils import post_filter_query_builder
 from schemas import NewPostPayload, PostFilterPayload, PostSchema
 from server.utils import get_current_user
 

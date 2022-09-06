@@ -1,5 +1,6 @@
 from fastapi import APIRouter
-from models import Post, User
+from models.post import Post
+from models.user import User
 from schemas import UserProfileWithPosts
 
 router = APIRouter(tags=["List users"])
