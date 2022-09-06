@@ -1,4 +1,8 @@
-import os
+"""
+Models package.
+Arranged by class mostly + helpers and db handlers.
+"""
+
 
 from peewee import IntegrityError
 
