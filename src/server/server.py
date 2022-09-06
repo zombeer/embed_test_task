@@ -1,3 +1,4 @@
+from config import REMOTE_URL
 from fastapi import FastAPI
 from models.utils import create_tables
 
@@ -14,9 +15,8 @@ app = FastAPI(
     description="Some basic user-post CRUD API example...",
     contact={"email": "zombeer@gmail.com"},
     version="0.1.0",
-    servers=[{"url": "http://localhost:8000"}],
+    servers=[{"url": REMOTE_URL}],
 )
-
 
 app.include_router(auth_router)
 app.include_router(users_router)
