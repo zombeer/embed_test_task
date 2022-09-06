@@ -1,0 +1,20 @@
+version: '3'
+services:
+  embed_xyz_api:
+    restart: unless-stopped
+    container_name: embed_xyz_api
+    build: .
+    image: embed_xyz_api
+    command: "uvicorn server:app --host=0.0.0.0"
+    volumes:
+      - ./database:/database
+    environment:
+      - UVICORN_HOST=0.0.0.0
+      - UVICORN_PORT=8000
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "500k"
+        max-file: "10"
+    ports:
+      - 8000:8000
