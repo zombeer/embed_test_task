@@ -1,6 +1,8 @@
 from exceptions import subscription_exists_exception
 from fastapi import APIRouter, Depends
-from models import IntegrityError, User, post_filter_query_builder
+from models import IntegrityError
+from models.user import User
+from models.utils import post_filter_query_builder
 from schemas import (
     MessageSchema,
     PostFilterPayload,

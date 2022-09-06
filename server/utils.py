@@ -2,7 +2,7 @@ from exceptions import not_authorized_exception, user_not_found_exception
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
-from models import User
+from models.user import User
 from passlib.context import CryptContext
 
 SECRET_KEY = "some_super_secret_key"

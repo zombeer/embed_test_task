@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Path
-from models import User
+from models.user import User
 from schemas import UpdateUserProfilePayload, UserProfile
 from server.utils import get_current_user
 
