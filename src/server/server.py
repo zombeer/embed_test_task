@@ -1,5 +1,6 @@
-from config import REMOTE_URL
+from config import ENABLE_CORS, REMOTE_URL
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from models.utils import create_tables
 
 from server.endpoints.auth import auth_router
@@ -17,6 +18,15 @@ app = FastAPI(
     version="0.1.0",
     servers=[{"url": REMOTE_URL}],
 )
+
+if ENABLE_CORS:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_headers=["*"],
+        allow_methods=["*"],
+        allow_credentials=True,
+    )
 
 app.include_router(auth_router)
 app.include_router(users_router)
