@@ -1,9 +1,9 @@
-from exceptions import not_authorized_exception, user_not_found_exception
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
-from models.user import User
+from models import User
 from passlib.context import CryptContext
+from src.exceptions import not_authorized_exception, user_not_found_exception
 
 SECRET_KEY = "some_super_secret_key"
 ALGORITHM = "HS256"

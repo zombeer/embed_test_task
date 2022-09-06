@@ -1,9 +1,6 @@
 from datetime import date
 
-from models import db
-from models.post import Post
-from models.subscription import Subscription
-from models.user import User
+from models import Post, Subscription, User, db
 
 
 def add_user(username: str, password: str) -> User | None:
