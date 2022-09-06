@@ -14,7 +14,7 @@ class Subscription(Model):
     target = DeferredForeignKey("User", backref="subscribed_by")
 
     class Meta:
-        db_table = "subscriptions"
+        table_name = "subscriptions"
         database = db
         # Adding unique constraint to both field to avoid duplicates.
         indexes = ((("source", "target"), True),)
