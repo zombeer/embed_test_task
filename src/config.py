@@ -2,7 +2,7 @@ import os
 
 # Default database(sqlite3)
 
-DB_FALLBACK_URI = "sqlite:///../database/embed_xyz_api.db"
+DB_FALLBACK_URI = "sqlite:///../database/embed_api.db"
 
 # Target database, use format as mentioned here:
 # https://docs.peewee-orm.com/en/latest/peewee/playhouse.html#connect
