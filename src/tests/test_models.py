@@ -1,25 +1,8 @@
-from re import L
-
-import pytest
-from models import Post, Subscription, User
+from models import User
 from models.utils import add_user
-from peewee import SqliteDatabase
 
 TEST_USER_1 = "TestUser1"
 TEST_USER_2 = "TestUser2"
-
-db = SqliteDatabase(":memory:")
-tables = [User, Post, Subscription]
-
-
-def setup_function():
-    db.bind(tables)
-    db.create_tables(tables)
-
-
-def teardown_function():
-    db.drop_tables(tables)
-    db.close()
 
 
 def test_add_user():
@@ -43,7 +26,7 @@ def test_get_user():
 
 
 def test_user_subscribe():
-    user1 = add_user(username=TEST_USER_1, password="password")
+    user1 = User.get_by_id(TEST_USER_1)
     user2 = add_user(username=TEST_USER_2, password="password")
 
     user1.add_subscription(user2)
@@ -55,17 +38,15 @@ def test_user_subscribe():
 
 
 def test_user_add_post():
-    user1 = add_user(username=TEST_USER_1, password="password")
-    user2 = add_user(username=TEST_USER_2, password="password")
-
-    user1.add_subscription(user2)
+    user1 = User.get_by_id(TEST_USER_1)
+    user2 = User.get_by_id(TEST_USER_2)
 
     post = user2.add_post("title", "text")
     assert (
         post.title == "title" and post.text == "text"
     ), "Should return proper post instance"
 
-    assert user2.posts.count() == 1, "Posts count should be 1"
+    assert user2.posts.count() == 1, "Posts count should be 1 "
     assert (
         user1.feed().count() == 1
     ), "User1 feed should be of leghth 1 after User2 adds post"

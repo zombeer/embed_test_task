@@ -1,6 +1,9 @@
+import os
+
 from config import ENABLE_CORS, REMOTE_URL
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from models import db
 from models.utils import create_tables
 
 from server.endpoints.auth import auth_router
@@ -27,6 +30,13 @@ if ENABLE_CORS:
         allow_methods=["*"],
         allow_credentials=True,
     )
+
+
+@app.get("/")
+def serve_main():
+    create_tables()
+    return {"state": "EmbedApi is online"}
+
 
 app.include_router(auth_router)
 app.include_router(users_router)
