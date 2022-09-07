@@ -1,6 +1,6 @@
 test_db := ../database/embed_api_test.db
 run:
-	cd src && uvicorn server:app
+	cd src && uvicorn server:app --reload
 
 test:
 ifneq (,$(findstring test, $(test_db)))

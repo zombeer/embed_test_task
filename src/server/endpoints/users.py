@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from models import Post, User
+from models.utils import get_top_users
 from schemas.outbound import UserProfileWithPosts
 
 router = APIRouter(tags=["List users"])
@@ -32,8 +33,7 @@ async def get_top20_profiles() -> list[UserProfileWithPosts]:
     List top20 users with their recent posts.
     """
     result = []
-    # TODO: Add custom ordering - implement popularity score
-    for u in User.select().limit(5):
+    for u in get_top_users():
         u.posts = list(u.posts.order_by(Post.id.desc()).limit(5))
         profileWithPosts = UserProfileWithPosts.from_orm(u)
         result.append(profileWithPosts)

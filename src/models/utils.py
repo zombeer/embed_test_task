@@ -34,6 +34,25 @@ def post_filter_query_builder(
     return query
 
 
+def get_top_users(limit: int = 20):
+    """
+    Custom rating implemented as sum of user subscribers count and posts count.
+    """
+    raw_query = f"""
+        SELECT u.*, COUNT(scores.x) AS score
+        FROM users u
+        LEFT JOIN (
+            SELECT author_id AS author, title AS x from posts
+            UNION
+            SELECT target_id, source_id from subscriptions
+            ) scores ON scores.author = u.name
+        GROUP BY u.name
+        ORDER BY score DESC
+        LIMIT {limit}
+    """
+    return User.raw(raw_query)
+
+
 def create_tables():
     """
     Helper to initialize tables
