@@ -1,8 +1,18 @@
+import pytest
+from config import DB_URI
 from models import User
 from models.utils import add_user
 
 TEST_USER_1 = "TestUser1"
 TEST_USER_2 = "TestUser2"
+
+
+@pytest.fixture(autouse=True, scope="session")
+def check_db_name():
+    if "test" not in DB_URI.lower():
+        pytest.exit(
+            reason='You must run tests against test DB provided via DB_URI env var(should contain "test" substring in name)'
+        )
 
 
 def test_add_user():
