@@ -1,4 +1,4 @@
-## embed_api
+## embed_xyz
 ### Technical details.
 
 Task implemented using `fastapi` server + `peewee` ORM.
@@ -24,7 +24,7 @@ In task mentioned most secure way to run app. It's obviously not the case. It I 
 ### Challenging parts
 The task was quite interesting. Tough points was:
 * Testing. Namely implementing fixtures for endpoint testing. Ended up with setting test database externally. Because it was too much to write multi-level fixtures for endpoints. Models testing weren't complicated though.
-* Custom sorting - ended up with a plain SQL, it's a bit tough to transcribe complex SQL with joins and unions into ORM syntax.
+* Custom sorting - ended up with a raw SQL, it's a bit tough to transcribe complex SQL with joins and unions into ORM syntax.
 * Writing docstrings (: I hope you'll like it. Wording is quite challenging task sometimes as well.
 
 ### Extra info.
