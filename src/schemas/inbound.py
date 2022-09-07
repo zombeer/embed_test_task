@@ -30,7 +30,7 @@ class UpdateUserProfilePayload(BaseModel):
     @validator("interests")
     def validate_interests(cls, v):
         """
-        This validator not only validats interests, but also casts list of strings into comma separated string so store it in DB.
+        This validator not only validates interests, but also casts list of strings into comma separated string so store it in DB.
         """
         for item in v:
             assert item.isalnum(), "interests must be alpha-numericals"
