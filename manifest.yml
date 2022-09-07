@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name:  embed-xyz
+---
+apiVersion: v1
+data:
+  DB_URI: cG9zdGdyZXNxbCtwb29sOi8vZW1iZWRfeHl6X3VzZXI6ZW1iZWRQYXNzd29yZDc3N0A1MS4xNS42MC4yMDc6MzEyMzQvZW1iZWRfeHl6X2Ri
+kind: Secret
+metadata:
+  creationTimestamp: "2022-09-07T14:16:07Z"
+  name: db-uri-secret
+  namespace: embed-xyz
+
+type: Opaque
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: embed-xyz-api
+  namespace: embed-xyz
+spec:
+  selector:
+    matchLabels:
+      app: embed-xyz
+  template:
+    metadata:
+      labels:
+        app: embed-xyz
+    spec:
+      containers:
+      - name: embed-xyz-api
+        env:
+        - name:  DB_URI
+          valueFrom:
+            secretKeyRef:
+              name:  db-uri-secret
+              key:  DB_URI
+        - name: UVICORN_HOST
+          value: "0.0.0.0"
+        - name: UVICORN_PORT
+          value: "8000"
+        - name: WEB_CONCURRENCY
+          value: "7"
+        - name: REMOTE_URL
+          value: "51.15.60.207"
+        image: ghcr.io/zombeer/embed_xyz
+        ports:
+        - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: embed-xyz
+  namespace: embed-xyz
+  labels:
+   app: embed-xyz
+spec:
+  type: NodePort
+  ports:
+    - name: "8000"
+      nodePort: 31600
+      port: 8000
+      targetPort: 8000
+  selector:
+    app: embed-xyz
+status:
+  loadBalancer: {}
