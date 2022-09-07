@@ -32,9 +32,11 @@ if ENABLE_CORS:
     )
 
 
-@app.get("/")
+@app.get("/", tags=["Info"], name="Root page. Just a status info here.")
 def serve_main():
-    create_tables()
+    """
+    Basic status info endpoint
+    """
     return {"state": "EmbedApi is online"}
 
 
