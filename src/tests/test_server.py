@@ -7,6 +7,7 @@ client = TestClient(app)
 def test_read_main():
     response = client.get("/")
     assert response.status_code == 200
+    assert "/docs" in response.url, "Root page must lead to /docs"
 
 
 def test_read_users():
