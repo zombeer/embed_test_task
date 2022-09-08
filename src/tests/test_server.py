@@ -6,8 +6,7 @@ client = TestClient(app)
 
 def test_read_main():
     response = client.get("/")
-    assert response.status_code == 200
-    assert response.json() == {"state": "EmbedApi is online"}
+    assert response.status_code == 307
 
 
 def test_read_users():
