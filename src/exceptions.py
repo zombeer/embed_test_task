@@ -9,6 +9,13 @@ not_authorized_exception = HTTPException(
     detail="Incorrect username or password",
 )
 
+# Exception to handle add_subscription errors
+add_subscription_exception = HTTPException(
+    status_code=status.HTTP_403_FORBIDDEN,
+    detail="You've reached maximum subscriptions count of 100",
+)
+
+
 # Exeption to handle duplicate username error
 user_exists_exception = HTTPException(
     status_code=status.HTTP_409_CONFLICT, detail="Username already exists"

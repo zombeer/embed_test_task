@@ -1,6 +1,10 @@
 from datetime import datetime
 
-from exceptions import subscription_not_found_exception, user_not_found_exception
+from exceptions import (
+    add_subscription_exception,
+    subscription_not_found_exception,
+    user_not_found_exception,
+)
 from peewee import CharField, DateField, DateTimeField, DoesNotExist, Model, TextField
 from playhouse.hybrid import hybrid_property
 
@@ -51,6 +55,8 @@ class User(Model):
         Adds username to self.subscriptons.
         Added an extra check because Sqlite wasn't following foreign key constraints for some reason.
         """
+        if self.subscriptions_count >= 100:
+            raise add_subscription_exception
         target = User.get_or_none(User.name == username)
         if not target:
             raise user_not_found_exception
