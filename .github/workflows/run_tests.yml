@@ -5,7 +5,7 @@ on: [push]
 jobs:
   build:
     env:
-      DB_URI: /database/embed_test.db
+      DB_URI: sqlite:////database/embed_test.db
 
     runs-on: ubuntu-latest
     strategy:
