@@ -1,9 +1,7 @@
-import os
-
 from config import ENABLE_CORS, REMOTE_URL
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from models import db
+from fastapi.responses import RedirectResponse
 from models.utils import create_tables
 
 from server.endpoints.auth import auth_router
@@ -32,12 +30,12 @@ if ENABLE_CORS:
     )
 
 
-@app.get("/", tags=["Info"], name="Root page. Just a status info here.")
+@app.get("/", tags=["Info"], name="Redirect to API docs.")
 def serve_main():
     """
-    Basic status info endpoint
+    Redirect to API documentation page.
     """
-    return {"state": "EmbedApi is online"}
+    return RedirectResponse("/docs")
 
 
 app.include_router(auth_router)
