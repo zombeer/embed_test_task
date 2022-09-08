@@ -29,8 +29,10 @@ The task was quite interesting. Tough points was:
 
 ### Extra info.
 Currenly instance of this API is running at my node.
-You can reach it by address http://51.15.60.207:31600/docs (Yep, I don't have a domain name, and don't really want to set up an ingress in fact (: )
+You can reach it by address http://51.15.60.207:31600 (Yep, I don't have a domain name, and don't really want to set up an ingress in fact (: )
 Hopefully, you'll like the result.
+
+* Added small CI/CD script - testing on pushes to main. Just a showcase (:
 
 Kind regards,
 Mikhail.
