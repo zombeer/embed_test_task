@@ -4,8 +4,8 @@ on: [push]
 
 jobs:
   build:
-  env:
-    DB_URI: /database/embed_test.db
+    env:
+      DB_URI: /database/embed_test.db
 
     runs-on: ubuntu-latest
     strategy:
