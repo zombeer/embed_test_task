@@ -59,7 +59,7 @@ async def get_user_posts_by_username(
     """
     List posts of the user with target username.
     """
-    user = User.get_or_none(User.name == username).execute()
+    user = User.get_or_none(User.name == username)
     if not user:
         raise user_not_found_exception
     result = []
