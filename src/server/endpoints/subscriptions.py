@@ -44,9 +44,6 @@ async def subscribe(
     """
     Adds provided username to current user subscriptions.
     """
-    import ipdb
-
-    ipdb.set_trace()
     try:
         current_user.add_subscription(payload.username)
     except IntegrityError:
