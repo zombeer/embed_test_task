@@ -2,6 +2,7 @@ from datetime import datetime
 
 from exceptions import (
     add_subscription_exception,
+    cant_subscribe_to_youserlf,
     subscription_not_found_exception,
     user_not_found_exception,
 )
@@ -55,6 +56,8 @@ class User(Model):
         Adds username to self.subscriptons.
         Added an extra check because Sqlite wasn't following foreign key constraints for some reason.
         """
+        if self.name == username:
+            raise cant_subscribe_to_youserlf
         if self.subscriptions_count >= 100:
             raise add_subscription_exception
         target = User.get_or_none(User.name == username)

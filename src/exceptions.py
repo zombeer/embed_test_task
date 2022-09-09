@@ -35,3 +35,9 @@ subscription_exists_exception = HTTPException(
 subscription_not_found_exception = HTTPException(
     status_code=status.HTTP_404_NOT_FOUND, detail="Subscription not found"
 )
+
+
+cant_subscribe_to_youserlf = HTTPException(
+    status_code=status.HTTP_403_FORBIDDEN,
+    detail="Not allowed to subscibe to your own account",
+)
