@@ -117,10 +117,12 @@ class NewPostPayload(BaseModel):
     @validator("title")
     def validate_title(cls, v):
         assert 1 < len(v) < 100, "Post title should 1 to 100 characters long"
+        return v
 
     @validator("text")
     def validate_text(cls, v):
         assert 10 < len(v) < 1000, "Post text should 10 to 1000 characters long"
+        return v
 
     class Config:
         schema_extra = {
