@@ -1,9 +1,9 @@
-from config import ENABLE_CORS, REMOTE_URL
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
-from models.utils import create_tables
 
+from config import ENABLE_CORS, REMOTE_URL
+from models.utils import create_tables
 from server.endpoints.auth import auth_router
 from server.endpoints.posts import router as posts_router
 from server.endpoints.subscriptions import router as subscriptions_router
@@ -31,10 +31,8 @@ if ENABLE_CORS:
 
 
 @app.get("/", tags=["Info"], name="Redirect to API docs.")
-def serve_main():
-    """
-    Redirect to API documentation page.
-    """
+def serve_main() -> RedirectResponse:
+    """Redirect to API documentation page."""
     return RedirectResponse("/docs")
 
 

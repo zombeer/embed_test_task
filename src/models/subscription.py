@@ -4,8 +4,8 @@ from models import db
 
 
 class Subscription(Model):
-    """
-    Subscription model.
+    """Subscription model.
+
     Just a join table for User-User relationship.
     """
 
@@ -14,6 +14,8 @@ class Subscription(Model):
     target = DeferredForeignKey("User", backref="subscribed_by")
 
     class Meta:
+        """Peewee Meta class."""
+
         table_name = "subscriptions"
         database = db
         # Adding unique constraint to both field to avoid duplicates.

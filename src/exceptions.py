@@ -1,6 +1,5 @@
-"""
-Custom exceptions for the aplication
-"""
+"""Custom exceptions for the aplication."""
+
 from fastapi import HTTPException, status
 
 # Exception to handle auth errors

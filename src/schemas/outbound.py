@@ -4,17 +4,13 @@ from pydantic import BaseModel, Field
 
 
 class MessageSchema(BaseModel):
-    """
-    Simply result message.
-    """
+    """Simply result message."""
 
     detail: str = Field(..., title="Details of operation")
 
 
 class PostSchema(BaseModel):
-    """
-    Post data shown in list of users post.
-    """
+    """Post data shown in list of users post."""
 
     id: int
     title: str
@@ -22,6 +18,8 @@ class PostSchema(BaseModel):
     created: datetime
 
     class Config:
+        """Pydantic config."""
+
         orm_mode = True
         schema_extra = {
             "example": {
@@ -34,13 +32,13 @@ class PostSchema(BaseModel):
 
 
 class PostWithAuthorSchema(PostSchema):
-    """
-    Post data shown in subscriptions, with post author mentioned/
-    """
+    """Post data shown in subscriptions, with post author mentioned/."""
 
     author: str
 
     class Config:
+        """Pydantic config."""
+
         orm_mode = True
         schema_extra = {
             "example": {
@@ -54,9 +52,7 @@ class PostWithAuthorSchema(PostSchema):
 
 
 class UserProfile(BaseModel):
-    """
-    User profile public data.
-    """
+    """User profile public data."""
 
     name: str
     country: str
@@ -70,25 +66,25 @@ class UserProfile(BaseModel):
     post_count: int
 
     class Config:
+        """Pydantic config."""
+
         orm_mode = True
 
 
 class UserProfileWithPosts(UserProfile):
-    """
-    User profile data with post samples included.
-    """
+    """User profile data with post samples included."""
 
     posts: list[PostSchema] = []
 
 
 class Token(BaseModel):
-    """
-    Login token.
-    """
+    """Login token."""
 
     access_token: str
     token_type: str
 
 
 class TokenPlus(Token):
+    """Login token with user data."""
+
     message: str

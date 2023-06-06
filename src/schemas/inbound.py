@@ -6,9 +6,7 @@ from pydantic import BaseModel, validator
 
 
 class UpdateUserProfilePayload(BaseModel):
-    """
-    User can update the following parts of his/her profile: short biography, birth date, country, city, list of interests.
-    """
+    """User can update the following parts of his/her profile: short biography, birth date, country, city, list of interests."""
 
     country: str | None = Body(None, title="Users country")
     city: str | None = Body(None, title="Users city")
@@ -29,18 +27,14 @@ class UpdateUserProfilePayload(BaseModel):
 
     @validator("interests")
     def validate_interests(cls, v):
-        """
-        This validator not only validates interests, but also casts list of strings into comma separated string so store it in DB.
-        """
+        """This validator not only validates interests, but also casts list of strings into comma separated string so store it in DB."""
         for item in v:
             assert item.isalnum(), "interests must be alpha-numericals"
         return ", ".join(v)
 
 
 class Username(BaseModel):
-    """
-    Basic username field with validator.
-    """
+    """Basic username field with validator."""
 
     username: str = Body(..., title="Unique name of the user")
 
@@ -60,9 +54,7 @@ class Username(BaseModel):
 
 
 class LoginPayload(Username):
-    """
-    Username + Password payload for registering and signing in.
-    """
+    """Username + Password payload for registering and signing in."""
 
     password: str = Body(..., title="Password for the new user")
 
@@ -88,9 +80,7 @@ class LoginPayload(Username):
 
 
 class PostFilterPayload(BaseModel):
-    """
-    Values for posts and subscription post filtration.
-    """
+    """Values for posts and subscription post filtration."""
 
     keyword: str | None = Query(None, title="Keyword to loop up in post title")
     start: date | None = Query(None, title="Post shoud be created after this date")
@@ -107,9 +97,7 @@ class PostFilterPayload(BaseModel):
 
 
 class NewPostPayload(BaseModel):
-    """
-    Payload for adding new post.
-    """
+    """Payload for adding new post."""
 
     title: str = Body(..., title="Title of the new post")
     text: str = Body(..., title="Text of the new post")
