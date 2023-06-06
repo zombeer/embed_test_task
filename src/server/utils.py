@@ -26,8 +26,9 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
         raise user_not_found_exception
 
     user = User.get_or_none(name=username)
-    if user is None:
+    if not user:
         raise not_authorized_exception
+
     # Update last user activity every time we see a token from him/her
     user.bump()
     return user
