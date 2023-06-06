@@ -13,7 +13,7 @@ DB_URI = os.getenv("DB_URI") or DB_FALLBACK_URI
 REMOTE_URL = os.getenv("REMOTE_URL", "http://localhost:8000")
 
 # How many posts should contain user profile at /users/
-POST_PREVIEW_COUNT = os.getenv("POST_PREVIEW_COUNT", 5)
+POST_PREVIEW_COUNT = os.getenv("POST_PREVIEW_COUNT", "5")
 
 # Env variable to turn on/off CORS middleware if needed.
-ENABLE_CORS = bool(os.getenv("CORS_ENABLED", False))
+ENABLE_CORS = bool(os.getenv("CORS_ENABLED", "0"))
