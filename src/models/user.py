@@ -1,4 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timezone
+
+from peewee import CharField, DateField, DateTimeField, DoesNotExist, Model, TextField
+from playhouse.hybrid import hybrid_property
 
 from exceptions import (
     add_subscription_exception,
@@ -6,10 +9,6 @@ from exceptions import (
     subscription_not_found_exception,
     user_not_found_exception,
 )
-from peewee import CharField, DateField, DateTimeField, DoesNotExist, Model, TextField
-from playhouse.hybrid import hybrid_property
-from pytz import timezone
-
 from models import Post, Subscription, db
 
 MAX_SUBSCRIPTIONS = 100
